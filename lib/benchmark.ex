@@ -79,26 +79,15 @@ defmodule Benchmark do
     Benchee.run(%{
       "old_algorithm api"    => fn(list) -> 
         url = "http://localhost:6000/api/prices"
-        # headers = %{"Content-Type" => "application/x-www-form-urlencoded"}
         headers = %{"Content-Type" => "application/json"}
-        
-        
-        # IEx.pry
-        # {:ok, response} = HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
-        # {:ok, response} = 
+
         HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
-        # Poison.decode(response.body)
       end,
       "new_algorithm api" => fn(list) -> 
         url = "http://localhost:6000/api/quotations"
-        # headers = %{"Content-Type" => "application/x-www-form-urlencoded"}
         headers = %{"Content-Type" => "application/json"}
         
-        # IEx.pry
-        # {:ok, response} = HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
-        # {:ok, response} =
         HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
-        # Poison.decode(response.body)
       end
     },
       formatters: [
