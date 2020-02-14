@@ -26,7 +26,9 @@ defmodule Benchmark.MixProject do
   defp deps do
     [
       {:benchee, "~> 1.0", only: :dev},
-      {:benchee_html, "~> 1.0", only: :dev}
+      {:benchee_html, "~> 1.0", only: :dev},
+      {:httpoison, "~> 1.6", only: :dev},
+      {:poison, "~> 3.1", only: :dev}
     ]
   end
 
