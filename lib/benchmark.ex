@@ -41,19 +41,6 @@ defmodule Benchmark do
       Enum.reject(destiny_sample["couriers_availables"], fn {k, v} -> v == "" end)
         |> Enum.into(%{})
     
-    origins_available_for_couriers = 
-      Enum.map(couriers_availables, fn courier -> {String.downcase(courier["name"]), "LAS CONDES"} end)
-        |> Enum.into(%{})
-
-    IEx.pry
-    algorithm_selected = if Enum.random(Enum.to_list(1..100)) < 90, do: 1, else: 2
-    algorithm_days = if algorithm_selected == 1, do: "", else: Enum.random(Enum.to_list(2..7))
-    courier_selected = if Enum.random(Enum.to_list(1..100)) < 92, do: false, else: true
-
-    
-    courier_for_client = if courier_selected, do: couriers_availables.sample, else: nil
-    courier_branch_office_id = if courier_selected, do: "courier_branch_offices_availables.where(courier_id: courier_for_client.id).sample.try(:id)", else: nil
-
 
     params = [
       couriers_availables_from: origins_available_for_couriers,
