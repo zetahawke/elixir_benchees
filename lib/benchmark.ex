@@ -24,11 +24,11 @@ defmodule Benchmark do
     HTTPoison.start
 
     
-    communes_origins = ["LAS CONDES"]
+    # communes_origins = ["LAS CONDES"]
     {:ok, communes_response} = HTTPoison.get("http://localhost:5000/api/communes")
     {:ok, communes_destinies} = Poison.decode(communes_response.body)
     {:ok, cbos_response} = HTTPoison.get("http://localhost:9001/api/couriers_branch_offices")
-    {:ok, courier_branch_offices_availables} = Poison.decode(cbos_response.body)
+    # {:ok, courier_branch_offices_availables} = Poison.decode(cbos_response.body)
     {:ok, couriers_response} = HTTPoison.get("http://localhost:9001/api/couriers")
     {:ok, couriers_availables} = Poison.decode(couriers_response.body)
     heights = Enum.to_list(1..70)
@@ -40,7 +40,7 @@ defmodule Benchmark do
       destiny_sample = Enum.random communes_destinies
 
       destinies_available_for_couriers = 
-        Enum.reject(destiny_sample["couriers_availables"], fn {k, v} -> v == "" end)
+        Enum.reject(destiny_sample["couriers_availables"], fn {_k, v} -> v == "" end)
           |> Enum.into(%{})
       
       origins_available_for_couriers = 
@@ -50,7 +50,7 @@ defmodule Benchmark do
       algorithm_selected = if Enum.random(Enum.to_list(1..100)) < 92, do: 1, else: 2
       algorithm_days = if algorithm_selected == 1, do: "", else: Enum.random(Enum.to_list(2..7))
       courier_selected = if Enum.random(Enum.to_list(1..100)) < 92, do: false, else: true
-      couriers_for_destiny = couriers_availables |> Enum.filter(fn courier -> Enum.member?(Enum.map(origins_available_for_couriers, fn {k,v} -> k end), String.downcase(courier["name"])) end)
+      couriers_for_destiny = couriers_availables |> Enum.filter(fn courier -> Enum.member?(Enum.map(origins_available_for_couriers, fn {k,_v} -> k end), String.downcase(courier["name"])) end)
       courier_for_client = if courier_selected, do: couriers_for_destiny |> Enum.random, else: nil
       # preselected_cbo = get_in(courier_branch_offices_availables |> Enum.filter(fn cbo -> cbo["courier_id"] == courier_for_client["id"] end), [Enum.random, "id"])
       # courier_branch_office_id = if courier_selected, do: preselected_cbo, else: nil
@@ -77,13 +77,13 @@ defmodule Benchmark do
     # IEx.pry
     
     Benchee.run(%{
-      "old_algorithm api"    => fn(list) -> 
+      "old_algorithm api"    => fn(_list) -> 
         url = "http://localhost:6000/api/prices"
         headers = %{"Content-Type" => "application/json"}
 
         HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
       end,
-      "new_algorithm api" => fn(list) -> 
+      "new_algorithm api" => fn(_list) -> 
         url = "http://localhost:6000/api/quotations"
         headers = %{"Content-Type" => "application/json"}
         
@@ -94,11 +94,11 @@ defmodule Benchmark do
         {Benchee.Formatters.HTML, file: "samples_output/my.html"},
         Benchee.Formatters.Console
       ],
-      time: 2,
+      time: 60,
       warmup: 2,
       inputs: %{
-        "Smaller List" => Enum.to_list(1..50),
-        "Bigger List"  => Enum.to_list(1..300),
+        "Smaller List" => Enum.to_list(1..20),
+        "Bigger List"  => Enum.to_list(1..100),
       }
     )
   end
