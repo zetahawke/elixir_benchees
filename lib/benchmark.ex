@@ -52,18 +52,19 @@ defmodule Benchmark do
       courier_selected = if Enum.random(Enum.to_list(1..100)) < 92, do: false, else: true
       couriers_for_destiny = couriers_availables |> Enum.filter(fn courier -> Enum.member?(Enum.map(origins_available_for_couriers, fn {k,v} -> k end), String.downcase(courier["name"])) end)
       courier_for_client = if courier_selected, do: couriers_for_destiny |> Enum.random, else: nil
-      courier_branch_office_id = if courier_selected, do: (courier_branch_offices_availables |> Enum.filter(fn cbo -> cbo["courier_id"] == courier_for_client["id"] end) |> Enum.random)["id"], else: nil
+      # preselected_cbo = get_in(courier_branch_offices_availables |> Enum.filter(fn cbo -> cbo["courier_id"] == courier_for_client["id"] end), [Enum.random, "id"])
+      # courier_branch_office_id = if courier_selected, do: preselected_cbo, else: nil
 
       [
-        couriers_availables_from: Enum.map(origins_available_for_couriers, fn({key, value}) -> {String.to_atom(key), value} end),
-        couriers_availables_to: Enum.map(destinies_available_for_couriers, fn({key, value}) -> {String.to_atom(key), value} end),
+        couriers_availables_from: origins_available_for_couriers, #Enum.map(origins_available_for_couriers, fn({key, value}) -> {String.to_atom(key), value} end),
+        couriers_availables_to: destinies_available_for_couriers, #Enum.map(destinies_available_for_couriers, fn({key, value}) -> {String.to_atom(key), value} end),
         height: Enum.random(heights),
         length: Enum.random(lengths),
         width: Enum.random(widths),
         weight: Enum.random(weights),
         is_payable: (if Enum.random(Enum.to_list(1..100)) < 92, do: false, else: true),
         destiny: (if Enum.random(Enum.to_list(1..100)) < 90, do: "domicilio", else: "sucursal"),
-        courier_branch_office_id: courier_branch_office_id,
+        courier_branch_office_id: nil,#courier_branch_office_id,
         courier_for_client: (if courier_for_client != nil, do: String.downcase(courier_for_client["name"]), else: nil),
         courier_selected: courier_selected,
         commune_id: destiny_sample["id"],
@@ -74,32 +75,41 @@ defmodule Benchmark do
     end
 
     # IEx.pry
-
+    
     Benchee.run(%{
       "old_algorithm api"    => fn(list) -> 
         url = "http://localhost:6000/api/prices"
-        headers = []
-
-        {:ok, response} = HTTPoison.get(url, headers, params: build_params.())
-        Poison.decode(response.body)
+        # headers = %{"Content-Type" => "application/x-www-form-urlencoded"}
+        headers = %{"Content-Type" => "application/json"}
+        
+        
+        # IEx.pry
+        # {:ok, response} = HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
+        # {:ok, response} = 
+        HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
+        # Poison.decode(response.body)
       end,
       "new_algorithm api" => fn(list) -> 
         url = "http://localhost:6000/api/quotations"
-        headers = []
-
-        {:od, response} = HTTPoison.get(url, headers, params: build_params.())
-        Poison.decode(response.body)
+        # headers = %{"Content-Type" => "application/x-www-form-urlencoded"}
+        headers = %{"Content-Type" => "application/json"}
+        
+        # IEx.pry
+        # {:ok, response} = HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
+        # {:ok, response} =
+        HTTPoison.post(url, build_params.() |> Enum.into(%{}) |> Poison.encode |> (fn {:ok, body} -> body end).(), headers)
+        # Poison.decode(response.body)
       end
     },
       formatters: [
         {Benchee.Formatters.HTML, file: "samples_output/my.html"},
         Benchee.Formatters.Console
       ],
-      time: 10,
+      time: 2,
       warmup: 2,
       inputs: %{
-        "Smaller List" => Enum.to_list(1..100),
-        "Bigger List"  => Enum.to_list(1..2_000),
+        "Smaller List" => Enum.to_list(1..50),
+        "Bigger List"  => Enum.to_list(1..300),
       }
     )
   end
